@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  django_app:
+    build: .
+    container_name: django_app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - selenium
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  selenium:
+    image: selenium/standalone-chrome
+    container_name: selenium
+    ports:
+      - "4444:4444"
+    shm_size: 2g
