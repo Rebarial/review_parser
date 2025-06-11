@@ -42,6 +42,8 @@ INSTALLED_APPS = [
 
     'yandex_parser',
     'common_parser',
+    'twogis_parser',
+    'vl_parser',
 ]
 
 MIDDLEWARE = [

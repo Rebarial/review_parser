@@ -3,16 +3,29 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 import time
 from typing import Optional
 import re
 
 def parse(url:str, limit:Optional[int] = None) -> list[dict]:
-    driver = webdriver.Chrome()
+    options = Options()
+    options.add_argument('--headless')  
+    options.add_argument('--no-sandbox')   
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--window-size=1920,1080')
+
+    driver = webdriver.Chrome(
+      service=Service(ChromeDriverManager().install()),
+      options=options
+    )
     result = []
-    driver.get('https://yandex.ru/maps/75/vladivostok/?ll=131.908412%2C43.092887&mode=poi&poi%5Bpoint%5D=131.909558%2C43.093373&poi%5Buri%5D=ymapsbm1%3A%2F%2Forg%3Foid%3D107198066732&z=17.24')
+    
     try:
-        wait = WebDriverWait(driver, 20)
+        driver.get(url)
+        wait = WebDriverWait(driver, 40)
 
         # Переключаемся на вкладку "Отзывы"
         reviews_tab = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.tabs-select-view__title._name_reviews')))
@@ -24,6 +37,10 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
 
         last_height = driver.execute_script('return arguments[0].scrollHeight;', scroll)
 
+        max_scroll_attempts = 10
+
+        scrill = 0
+
         while True:
             driver.execute_script('arguments[0].scrollTo(0, arguments[0].scrollHeight)', scroll)
 
@@ -31,10 +48,11 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
             
             new_height = driver.execute_script('return arguments[0].scrollHeight;', scroll)
             
-            if new_height == last_height:
+            if new_height == last_height or scroll >= max_scroll_attempts:
                 break
                 
             last_height = new_height
+            scroll += 1
 
         review_blocks = wait.until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, '.business-review-view__info')))
         count = 0

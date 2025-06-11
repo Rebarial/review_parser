@@ -24,12 +24,28 @@ class Branch(models.Model):
 
 
 class Review(models.Model):
+
+    PROVIDER_CHOICES = [
+        ('yandex', 'Яндекс'),
+        ('google', 'Гугл'),
+        ('2gis', '2GIS'),
+        ('vlru', 'VL.RU')
+    ]
+
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="reviews")
     author = models.CharField(max_length=255)
     avatar = models.URLField(null=True, blank=True)
+    video = models.URLField(null=True, blank=True)
+    photos = models.TextField()
     published_date = models.DateTimeField(default=now)
     rating = models.PositiveSmallIntegerField()
     content = models.TextField()
     
+    provider = models.CharField(
+        max_length=10,
+        choices=PROVIDER_CHOICES,
+        null=True, blank=True
+    )
+
     def __str__(self):
         return f"{self.author}'s review for {self.branch}"
