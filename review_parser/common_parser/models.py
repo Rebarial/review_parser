@@ -3,11 +3,11 @@ from django.utils.timezone import now
 
 
 class Organization(models.Model):
-    title = models.CharField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
     inn = models.CharField(max_length=12, null=True, blank=True)
     
     def __str__(self):
-        return self.title or f'Организация #{self.id}'
+        return self.name or f'Организация #{self.id}'
 
 
 class Branch(models.Model):
@@ -17,10 +17,16 @@ class Branch(models.Model):
         related_name="branches"
     )
     address = models.TextField()
-    yandex_map_link = models.URLField(null=True, blank=True)
+    yandex_map_url = models.URLField(max_length=500, null=True, blank=True)
+    twogis_map_url = models.URLField(max_length=500, null=True, blank=True)
+    vlru_url = models.URLField(max_length=500, null=True, blank=True)
+    twogis_review_count = models.IntegerField(null=True, blank=True)
+    twogis_review_avg = models.FloatField(null=True, blank=True)
+    vlru_review_count = models.IntegerField(null=True, blank=True)
+    vlru_review_avg = models.FloatField(null=True, blank=True)
     
     def __str__(self):
-        return f'{self.organization}: {self.address[:50]} : {self.yandex_map_link}'
+        return f'{self.id} : {self.organization}: {self.address[:50]}'
 
 
 class Review(models.Model):
@@ -36,7 +42,7 @@ class Review(models.Model):
     author = models.CharField(max_length=255)
     avatar = models.URLField(null=True, blank=True)
     video = models.URLField(null=True, blank=True)
-    photos = models.TextField()
+    photos = models.TextField(null=True, blank=True)
     published_date = models.DateTimeField(default=now)
     rating = models.PositiveSmallIntegerField()
     content = models.TextField()

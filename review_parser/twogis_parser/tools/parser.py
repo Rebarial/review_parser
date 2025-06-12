@@ -1,31 +1,71 @@
 import requests
 import time
 import json
+import re
+from common_parser.tools.create_objects import get_or_create_Branch, get_or_create_Organization, create_review
+from twogis_parser.tools.to_reviews import convert_2gis_reviews_to_model_data
+
+def create_2gis_reviews(url: str, inn: str, org_name: str ="", address: str ="", count: str = 50) -> int:
+    dict_2gis = parse(get_api_url_from_2gis(url, count or 50))
+
+    branch = get_or_create_Branch(
+        organization=get_or_create_Organization(inn, org_name),
+        address=address,
+        url_name="twogis_map_url",
+        url=url,
+        review_count_name = 'twogis_review_count',
+        review_count = dict_2gis['count'],
+        review_avg_name = 'twogis_review_avg',
+        review_avg = dict_2gis['rating']
+    )
+
+    cnt = 0
+
+    for review in dict_2gis['reviews']:
+        if create_review(convert_2gis_reviews_to_model_data(branch=branch, review_data=review)):
+            cnt += 1
+
+    return cnt
+
+def get_api_url_from_2gis(url: str, limit: int = 50) -> str:
+
+    pattern = r'/firm/(\d+)'
+    match = re.search(pattern, url)
+    if match:
+        firm_id = match.group(1)
+    else:
+        return None
+    return f"https://public-api.reviews.2gis.com/2.0/branches/{firm_id}/reviews?limit={limit}&is_advertiser=true&fields=meta.branch_rating,meta.branch_reviews_count,meta.total_count&without_my_first_review=false&rated=true&sort_by=date_edited&key=37c04fe6-a560-4549-b459-02309cf643ad&locale=ru_RU" 
+
 
 def parse(url):
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        time.sleep(30)
-
+    try:
         response = requests.get(url)
 
-    response_text = response.text
-    response_dict = json.loads(response_text)
+        if response.status_code != 200:
+            time.sleep(30)
 
-    if response_dict["meta"]["total_count"] == 0:
-        time.sleep(30)
-        response = requests.get(url)
+            response = requests.get(url)
+
         response_text = response.text
         response_dict = json.loads(response_text)
 
-    if response_dict["meta"]["total_count"] == 0:
-        return {'error': 'parse failed'}
-    
-    response_dict
+        if response_dict["meta"]["total_count"] == 0:
+            time.sleep(30)
+            response = requests.get(url)
+            response_text = response.text
+            response_dict = json.loads(response_text)
 
-    return {
-        'branch_rating': response_dict["meta"]["branch_rating"],
-        'total': response_dict["meta"]["total_count"],
-        'reviews': response_dict["reviews"]
-    }
+        if response_dict["meta"]["total_count"] == 0:
+            print({'error': 'parse failed'})
+            return {'error': 'parse failed'}
+        
+        response_dict
+
+        return {
+            'rating': response_dict["meta"]["branch_rating"],
+            'count': response_dict["meta"]["total_count"],
+            'reviews': response_dict["reviews"]
+        }
+    except:
+        print(response_dict)

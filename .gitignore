@@ -4,3 +4,6 @@ __pycache__
 temp.pdf
 temp.xlsx
 *.sqlite3
+test*.json
+test.json
+testim.py

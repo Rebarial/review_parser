@@ -1,18 +1,20 @@
 from django.contrib import admin
 from .models import Organization, Branch, Review
 
-class BranchInline(admin.TabularInline):
+class BranchInline(admin.StackedInline):
     model = Branch
     extra = 0 
-    fields = ('address', 'yandex_map_link') 
     show_change_link = True 
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'inn')  
-    search_fields = ['title']        
+    list_display = ('id', 'name', 'inn')  
+    search_fields = ['name']        
     ordering = ['id']
     inlines = [BranchInline] 
+    actions = ['parse_2gis']
+
+
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):

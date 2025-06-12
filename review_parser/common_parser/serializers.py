@@ -4,12 +4,12 @@ from .models import Organization, Branch, Review
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
-        fields = ['id', 'title', 'inn']
+        fields = '__all__'
 
 class BranchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Branch
-        fields = ['id', 'organization', 'address', 'yandex_map_link']
+        fields = '__all__'
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
