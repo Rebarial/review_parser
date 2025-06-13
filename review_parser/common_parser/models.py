@@ -55,3 +55,16 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.author}'s review for {self.branch}"
+    
+
+
+class BranchIPMapping(models.Model):
+    branch = models.ForeignKey(
+        Branch,
+        on_delete=models.CASCADE,
+        related_name='ip_mappings'
+    )
+    ip_address = models.GenericIPAddressField()
+    
+    def __str__(self):
+        return f"{self.ip_address} → Филиал {self.branch.id} : {self.branch.address}"

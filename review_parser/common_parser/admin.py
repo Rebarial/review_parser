@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Organization, Branch, Review
+from .models import Organization, Branch, Review, BranchIPMapping
 
 class BranchInline(admin.StackedInline):
     model = Branch
@@ -23,3 +23,6 @@ class ReviewAdmin(admin.ModelAdmin):
     search_fields = ['author', 'content']  
     date_hierarchy = 'published_date'      
     ordering = ['-published_date']        
+
+
+admin.site.register(BranchIPMapping)
