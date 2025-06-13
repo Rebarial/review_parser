@@ -178,6 +178,7 @@ def get_reviews_by_ip(request):
     branch_serializer = BranchSerializer(branches, many=True)
 
     data = {
+            'ip': ip,
             'branches': branch_serializer.data,
             'reviews': reviews_data,
             }
