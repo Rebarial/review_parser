@@ -9,6 +9,7 @@ from .models import Branch, Review, BranchIPMapping
 import json
 from rest_framework import serializers
 from .serializers import ReviewSerializer, BranchSerializer
+from django.db.models import Count
 
 class ProviderSerializer(serializers.Serializer):
     provider = serializers.CharField()
@@ -88,10 +89,12 @@ def get_reviews(request):
         reviews_serializer = ReviewSerializer(reviews, many=True)
         reviews_data = reviews_serializer.data
 
+
     branch_serializer = BranchSerializer(branch)
 
-    data = {
+    data = {         
             'branch': branch_serializer.data,
+            'count' : Review.objects.filter(branch=branch).values('provider').annotate(review_count=Count('id')),
             'reviews': reviews_data,
             }
     
