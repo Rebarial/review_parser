@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import FillReviewsAPI
+from .views import parse_yandex
 
 urlpatterns = [
-    path('fill/', FillReviewsAPI.as_view(), name='fill-yandex'),
+    path('parse/', parse_yandex, name='parse-yandex'),
 ]

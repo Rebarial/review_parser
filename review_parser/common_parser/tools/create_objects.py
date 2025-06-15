@@ -13,7 +13,7 @@ def create_review(data: dict)->bool:
     if existing_review:
         return False
     
-    serializer_review = ReviewSerializer(data={
+    data_rewiew={
                     'branch': data["branch"].id,
                     'author': data["author"],
                     'avatar': data["avatar"],
@@ -21,7 +21,16 @@ def create_review(data: dict)->bool:
                     'content': data["content"],
                     'published_date': data["published_date"],
                     'provider': data['provider']
-                })
+                }
+    
+    if "photos" in data:
+        data_rewiew["photos"] = data["photos"]
+
+    if "video" in data:
+        data_rewiew["video"] = data["video"]
+
+    serializer_review = ReviewSerializer(data = data_rewiew)
+    
     if serializer_review.is_valid():
         serializer_review.save()
         return True
@@ -33,7 +42,7 @@ def create_review(data: dict)->bool:
 def get_or_create_Organization(inn: str, name:str) -> Organization:
         try:
             organization = Organization.objects.get(inn=inn)
-            if organization.name != name:
+            if name and organization.name != name:
                 organization.name = name 
                 organization.save()
         except Organization.DoesNotExist:
@@ -51,11 +60,11 @@ def get_or_create_Organization(inn: str, name:str) -> Organization:
 def get_or_create_Branch(organization: str, address: str, url_name: str, url: str, review_count_name: str, review_count: str, review_avg_name: str, review_avg: str) -> Branch:
     try:
         branch = Branch.objects.get(address=address, organization=organization)
-        if getattr(branch, url_name) != url:
+        if url and getattr(branch, url_name) != url:
             setattr(branch,url_name,url)
-        if getattr(branch, review_count_name) != review_count:
+        if review_count and getattr(branch, review_count_name) != review_count:
             setattr(branch, review_count_name, review_count)
-        if getattr(branch, review_avg_name) != review_avg:
+        if review_avg and getattr(branch, review_avg_name) != review_avg:
             setattr(branch, review_avg_name, review_avg)
         branch.save()
     except Branch.DoesNotExist:

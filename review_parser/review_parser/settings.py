@@ -33,6 +33,10 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'drf_yasg',
 
+    'nested_admin',
+
+    
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,6 +48,7 @@ INSTALLED_APPS = [
     'common_parser',
     'twogis_parser',
     'vl_parser',
+
 ]
 
 MIDDLEWARE = [

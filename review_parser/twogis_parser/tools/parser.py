@@ -4,7 +4,12 @@ import json
 import re
 from common_parser.tools.create_objects import get_or_create_Branch, get_or_create_Organization, create_review
 from twogis_parser.tools.to_reviews import convert_2gis_reviews_to_model_data
+from loguru import logger
+from common_parser.models import Branch
 
+logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="DEBUG")
+
+@logger.catch
 def create_2gis_reviews(url: str, inn: str, org_name: str ="", address: str ="", count: str = 50) -> int:
     dict_2gis = parse(get_api_url_from_2gis(url, count or 50))
 
@@ -37,35 +42,33 @@ def get_api_url_from_2gis(url: str, limit: int = 50) -> str:
         return None
     return f"https://public-api.reviews.2gis.com/2.0/branches/{firm_id}/reviews?limit={limit}&is_advertiser=true&fields=meta.branch_rating,meta.branch_reviews_count,meta.total_count&without_my_first_review=false&rated=true&sort_by=date_edited&key=37c04fe6-a560-4549-b459-02309cf643ad&locale=ru_RU" 
 
-
+@logger.catch
 def parse(url):
-    try:
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        time.sleep(30)
+
         response = requests.get(url)
 
-        if response.status_code != 200:
-            time.sleep(30)
+    response_text = response.text
+    response_dict = json.loads(response_text)
 
-            response = requests.get(url)
-
+    if response_dict["meta"]["total_count"] == 0:
+        time.sleep(30)
+        response = requests.get(url)
         response_text = response.text
         response_dict = json.loads(response_text)
 
-        if response_dict["meta"]["total_count"] == 0:
-            time.sleep(30)
-            response = requests.get(url)
-            response_text = response.text
-            response_dict = json.loads(response_text)
+    if response_dict["meta"]["total_count"] == 0:
+        print({'error': 'parse failed'})
+        return {'error': 'parse failed'}
+    
+    response_dict
 
-        if response_dict["meta"]["total_count"] == 0:
-            print({'error': 'parse failed'})
-            return {'error': 'parse failed'}
-        
-        response_dict
+    return {
+        'rating': response_dict["meta"]["branch_rating"],
+        'count': response_dict["meta"]["total_count"],
+        'reviews': response_dict["reviews"]
+    }
 
-        return {
-            'rating': response_dict["meta"]["branch_rating"],
-            'count': response_dict["meta"]["total_count"],
-            'reviews': response_dict["reviews"]
-        }
-    except:
-        print(response_dict)

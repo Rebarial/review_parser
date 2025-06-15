@@ -1,0 +1,12 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+ 
+{% block object-tools %}
+ 
+<form action="{% url 'admin:common_parser_branch_change' original.pk %}parse/" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="{% trans 'Парсинг' %}" name="_parse"/>
+ </form>
+ 
+    {{ block.super }}
+{% endblock %}

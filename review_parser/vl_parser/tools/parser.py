@@ -5,9 +5,12 @@ from datetime import datetime
 import re
 from common_parser.tools.create_objects import get_or_create_Branch, get_or_create_Organization, create_review
 from common_parser.models import Branch
+from loguru import logger
 
+logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="DEBUG")
 
 def create_vlru_reviews(url: str, inn: str, org_name: str ="", address: str ="", count: str = 50) -> int:
+
     company = get_company_from_url(url)
 
     dict_vlru = parse(company)
@@ -34,18 +37,27 @@ def create_vlru_reviews(url: str, inn: str, org_name: str ="", address: str ="",
 
     return cnt
 
+@logger.catch
 def parse_vlru_reviews(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
+    
     reviews_list = soup.find('ul', {'id': 'CommentsList'})
     
     if not reviews_list:
-        return []
-    
+        reviews_list = soup
+
     reviews = []
     
     for review_item in reviews_list.find_all('li', recursive=False):
         try:
+            if review_item.get('data-parent-id'):
+                continue
+
+            if not review_item.get('comment'):
+                continue
+
             comment_id = review_item.get('comment')
+            #print(comment_id)
             profile_id = review_item.get('data-profile-id')
             review_type = review_item.get('data-type')
             timestamp = int(review_item.get('data-timestamp'))
@@ -64,9 +76,17 @@ def parse_vlru_reviews(html_content):
             if rating_wrapper:
                 active_rating = rating_wrapper.find('div', class_='active')
                 if active_rating and 'data-value' in active_rating.attrs:
-                    rating = int(active_rating['data-value'])
+                    rating = float(active_rating['data-value'])
                     rating *= 5
             
+            #Extract photos
+            photos = ""
+            images_wrapper = review_item.find('div', class_='comment-images-wrapper')
+            if images_wrapper:
+                items = images_wrapper.find_all('div', class_='item')
+                photos = ",".join([item.find('a')['href'] for item in items])
+
+
             # Extract content
             comment_text = review_item.find('p', class_='comment-text')
             content = comment_text.get_text(strip=True) if comment_text else ""
@@ -80,7 +100,7 @@ def parse_vlru_reviews(html_content):
                 'author': author,
                 'avatar': avatar,
                 'video': None, 
-                'photos': [],  
+                'photos': photos,  
                 'published_date': published_date,
                 'rating': rating,
                 'content': content,
@@ -101,7 +121,7 @@ def get_company_from_url(url: str) -> str:
         return match.group(1)
     return None
 
-def parse(company):
+def send_request_vl(company):
     url = f'https://www.vl.ru/commentsgate/ajax/thread/company/{company}/embedded'
     headers = {
         'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -111,10 +131,44 @@ def parse(company):
     params = {'theme': 'company', 'moderatorMode': '1'}
 
     response = requests.get(url, headers=headers, params=params)
+
+    return response
+
+def send_request_vl_comment(company, threadId, before):
+    url = f'https://www.vl.ru/commentsgate/ajax/comments/{threadId}/rendered?'
+    headers = {
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': f'https://www.vl.ru/{company}'
+    }
+    params = {'theme': 'company', 'moderatorMode': '1', 'before': f'{before}'}
+
+    response = requests.get(url, headers=headers, params=params)
+
+    return response
+
+@logger.catch
+def parse(company):
+
+    response = send_request_vl(company)
     if response.status_code == 200:
         data = response.json()
+
+        reviews = parse_vlru_reviews(data["data"]["content"])
+        threadId = data["data"]["threadId"]
+
+        while data["data"]["lastCommentId"] and data["data"]["commentsCount"] and response.status_code == 200:
+            response = send_request_vl_comment(company, threadId, data["data"]["lastCommentId"])
+            data = response.json()
+            reviews = reviews + parse_vlru_reviews(data["data"]["content"])
+            
+
+        count = len(reviews)
+        print(count)
+        raiting = 0
+
         return {
-                'reviews': parse_vlru_reviews(data["data"]["content"]),
-                'count': data["total"],
-                'rating': 0,
+                'reviews': reviews,
+                'count': count,
+                'rating': 5,
             }

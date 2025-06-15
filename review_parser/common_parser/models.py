@@ -4,7 +4,7 @@ from django.utils.timezone import now
 
 class Organization(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
-    inn = models.CharField(max_length=12, null=True, blank=True)
+    inn = models.CharField(max_length=12, null=False, blank=False, unique=True)
     
     def __str__(self):
         return self.name or f'Организация #{self.id}'
@@ -20,6 +20,8 @@ class Branch(models.Model):
     yandex_map_url = models.URLField(max_length=500, null=True, blank=True)
     twogis_map_url = models.URLField(max_length=500, null=True, blank=True)
     vlru_url = models.URLField(max_length=500, null=True, blank=True)
+    yandex_review_count = models.IntegerField(null=True, blank=True)
+    yandex_review_avg = models.FloatField(null=True, blank=True)
     twogis_review_count = models.IntegerField(null=True, blank=True)
     twogis_review_avg = models.FloatField(null=True, blank=True)
     vlru_review_count = models.IntegerField(null=True, blank=True)
