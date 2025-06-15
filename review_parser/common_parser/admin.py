@@ -32,12 +32,39 @@ class BranchAdmin(NestedModelAdmin):
         create_yandex_reviews(url=branch.yandex_map_url, inn=branch.organization.inn, address=branch.address)
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
+    
+    def parsing_yandex(self, request, object_id=None):  
+        
+        branch = Branch.objects.get(id=object_id)
+
+        create_yandex_reviews(url=branch.yandex_map_url, inn=branch.organization.inn, address=branch.address)
+
+        return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
+    
+    def parsing_2gis(self, request, object_id=None):  
+        
+        branch = Branch.objects.get(id=object_id)
+
+        create_2gis_reviews(url=branch.yandex_map_url, inn=branch.organization.inn, address=branch.address)
+
+        return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
+    
+    def parsing_vlru(self, request, object_id=None):  
+        
+        branch = Branch.objects.get(id=object_id)
+
+        create_vlru_reviews(branch.vlru_url, branch.organization.inn, address=branch.address)
+
+        return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
 
     def get_urls(self):
         urls = super().get_urls()
         info = self.model._meta.app_label, self.model._meta.model_name
         my_urls = [
             path('<path:object_id>/change/parse/', self.admin_site.admin_view(self.parsing)),
+            path('<path:object_id>/change/parse-yandex/', self.admin_site.admin_view(self.parsing_yandex)),
+            path('<path:object_id>/change/parse-2gis/', self.admin_site.admin_view(self.parsing_2gis)),
+            path('<path:object_id>/change/parse-vlru/', self.admin_site.admin_view(self.parsing_vlru)),
         ]
         return my_urls + urls
 
