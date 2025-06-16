@@ -18,10 +18,10 @@ logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="
 @logger.catch
 def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     options = Options()
-    options.add_argument('--headless')  
-    options.add_argument('--no-sandbox')   
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--window-size=1920,1080')
+    #options.add_argument('--headless')  
+    #options.add_argument('--no-sandbox')   
+    #options.add_argument('--disable-dev-shm-usage')
+    #options.add_argument('--window-size=1920,1080')
 
     driver = webdriver.Chrome(
       service=Service(ChromeDriverManager().install()),
@@ -35,12 +35,18 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
 
     time.sleep(3)
 
-    # Переключаемся на вкладку "Отзывы"
+    
     reviews_tab = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.tabs-select-view__title._name_reviews')))
-    reviews_counter = reviews_tab.find_element(By.CLASS_NAME, 'tabs-select-view__counter').text
+    if reviews_tab:
+        reviews_counter = reviews_tab.find_element(By.CLASS_NAME, 'tabs-select-view__counter').text
     stars_block = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.business-card-title-view__header')))
-    stars_count_global = len(stars_block.find_elements(By.CSS_SELECTOR, '.business-rating-badge-view__star._full'))
-    reviews_tab.click()
+    if stars_block:
+        raiting_global = float(stars_block.find_element(By.CSS_SELECTOR, '.business-rating-badge-view__rating-text').text.replace(",", "."))
+    
+    time.sleep(3)
+    # Переключаемся на вкладку "Отзывы"
+    driver.execute_script("arguments[0].click();", reviews_tab)
+    #reviews_tab.click()
 
     time.sleep(3)
 
@@ -114,7 +120,7 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     driver.quit()
     return {        
             'count': reviews_counter,
-            'rating': stars_count_global,
+            'rating': raiting_global,
             'reviews': result,
          }
 
