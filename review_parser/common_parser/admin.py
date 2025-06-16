@@ -45,7 +45,7 @@ class BranchAdmin(NestedModelAdmin):
         
         branch = Branch.objects.get(id=object_id)
 
-        create_2gis_reviews(url=branch.yandex_map_url, inn=branch.organization.inn, address=branch.address)
+        create_2gis_reviews(url=branch.twogis_map_url, inn=branch.organization.inn, address=branch.address)
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
     

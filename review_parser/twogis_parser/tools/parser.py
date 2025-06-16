@@ -13,6 +13,11 @@ logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="
 def create_2gis_reviews(url: str, inn: str, org_name: str ="", address: str ="", count: str = 50) -> int:
     dict_2gis = parse(get_api_url_from_2gis(url, count or 50))
 
+    new_dict = [1]
+    while len(new_dict):
+        new_dict = parse(get_api_url_from_2gis_offset(url, count or 50, len(dict_2gis['reviews'])))["reviews"]
+        dict_2gis['reviews'] += new_dict
+
     branch = get_or_create_Branch(
         organization=get_or_create_Organization(inn, org_name),
         address=address,
@@ -41,6 +46,16 @@ def get_api_url_from_2gis(url: str, limit: int = 50) -> str:
     else:
         return None
     return f"https://public-api.reviews.2gis.com/2.0/branches/{firm_id}/reviews?limit={limit}&is_advertiser=true&fields=meta.branch_rating,meta.branch_reviews_count,meta.total_count&without_my_first_review=false&rated=true&sort_by=date_edited&key=37c04fe6-a560-4549-b459-02309cf643ad&locale=ru_RU" 
+
+def get_api_url_from_2gis_offset(url: str, limit: int = 50, offset: int = 50) -> str:
+
+    pattern = r'/firm/(\d+)'
+    match = re.search(pattern, url)
+    if match:
+        firm_id = match.group(1)
+    else:
+        return None
+    return f"https://public-api.reviews.2gis.com/2.0/branches/{firm_id}/reviews?limit={limit}&offset={offset}&is_advertiser=true&fields=meta.branch_rating,meta.branch_reviews_count,meta.total_count&without_my_first_review=false&rated=true&sort_by=date_edited&key=37c04fe6-a560-4549-b459-02309cf643ad&locale=ru_RU" 
 
 @logger.catch
 def parse(url):
