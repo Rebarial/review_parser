@@ -31,15 +31,21 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     
 
     driver.get(url)
-    wait = WebDriverWait(driver, 60)
+    wait = WebDriverWait(driver, 20)
 
     time.sleep(3)
 
-    
+    reviews_counter = -1
+    raiting_global = -1
     reviews_tab = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.tabs-select-view__title._name_reviews')))
     if reviews_tab:
         reviews_counter = reviews_tab.find_element(By.CLASS_NAME, 'tabs-select-view__counter').text
-    stars_block = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.business-card-title-view__header')))
+    try:
+        stars_block = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.business-card-title-view__header')))
+    except Exception as e:
+        stars_block = None
+        print(f"Элемент не найден: {e}")
+
     if stars_block:
         raiting_global = float(stars_block.find_element(By.CSS_SELECTOR, '.business-rating-badge-view__rating-text').text.replace(",", "."))
     
@@ -70,10 +76,12 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
             
         last_height = new_height
         scroll_count += 1
+    try:
+        review_blocks = wait.until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, '.business-review-view__info')))
+    except:
+        review_blocks = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='business-review-view__info']")))
 
-    review_blocks = wait.until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, '.business-review-view__info')))
     count = 0
-    
     
     for review_block in review_blocks:
 
@@ -103,18 +111,21 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
         
             review_text = review_block.find_element(By.CSS_SELECTOR, '.business-review-view__body-text').text.strip()
 
-            result.append(
-                {
-                    'author': author_name,
-                    'avatar': avatar_img_url,
-                    'published_date': parse_date_string(date_published),
-                    'rating': stars_count,
-                    'content': review_text,
-                    'provider': 'yandex',
-                    'photos': photos
-                }
-            )
-            count += 1
+            try:
+                result.append(
+                    {
+                        'author': author_name,
+                        'avatar': avatar_img_url,
+                        'published_date': parse_date_string(date_published),
+                        'rating': stars_count,
+                        'content': review_text,
+                        'provider': 'yandex',
+                        'photos': photos
+                    }
+                )
+                count += 1
+            except Exception:
+                print("Ошибка при добавлении ", Exception)
             if limit and limit == count:
                 break
     driver.quit()
