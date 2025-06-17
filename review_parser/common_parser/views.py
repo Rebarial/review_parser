@@ -44,20 +44,26 @@ class ProviderSerializer(serializers.Serializer):
                             "vlru_review_avg",
                             "organization"
                         },
+                        'provider_reviews_count': [
+                            {
+                                "provider",
+                                "review_count"
+                            }
+                        ]
                         "reviews": [
                             {
-                            "id",
-                            "author",
-                            "avatar",
-                            "video",
-                            "photos",
-                            "published_date",
-                            "rating",
-                            "content",
-                            "provider",
-                            "branch"
+                                "id",
+                                "author",
+                                "avatar",
+                                "video",
+                                "photos",
+                                "published_date",
+                                "rating",
+                                "content",
+                                "provider",
+                                "branch"
                             },
-                            ]
+                        ]
                                 ''', 400: "Некорректные данные"}
 )
 @api_view(['GET'])
@@ -94,7 +100,7 @@ def get_reviews(request):
 
     data = {         
             'branch': branch_serializer.data,
-            'count' : Review.objects.filter(branch=branch).values('provider').annotate(review_count=Count('id')),
+            'provider_reviews_count' : Review.objects.filter(branch=branch).values('provider').annotate(review_count=Count('id')),
             'reviews': reviews_data,
             }
     
@@ -115,8 +121,9 @@ def get_reviews(request):
                       },),
                   required=False),
     ],
-    responses={200: '''
-                        "branches": [{
+        responses={200: '''
+                        "ip",
+                        "branch": {
                             "id",
                             "address",
                             "yandex_map_url",
@@ -127,21 +134,27 @@ def get_reviews(request):
                             "vlru_review_count",
                             "vlru_review_avg",
                             "organization"
-                        }],
+                        },
+                        'provider_reviews_count': [
+                            {
+                                "provider",
+                                "review_count"
+                            }
+                        ]
                         "reviews": [
                             {
-                            "id",
-                            "author",
-                            "avatar",
-                            "video",
-                            "photos",
-                            "published_date",
-                            "rating",
-                            "content",
-                            "provider",
-                            "branch"
+                                "id",
+                                "author",
+                                "avatar",
+                                "video",
+                                "photos",
+                                "published_date",
+                                "rating",
+                                "content",
+                                "provider",
+                                "branch"
                             },
-                            ]
+                        ]
                                 ''', 400: "Некорректные данные"}
 )
 @api_view(['GET'])
@@ -183,6 +196,7 @@ def get_reviews_by_ip(request):
     data = {
             'ip': ip,
             'branches': branch_serializer.data,
+            'provider_reviews_count' : Review.objects.filter(branch__in=branches).values('provider').annotate(review_count=Count('id')),
             'reviews': reviews_data,
             }
     
