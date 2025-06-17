@@ -86,12 +86,10 @@ def parse(url):
     if response_dict["meta"]["total_count"] == 0:
         print({'error': 'parse failed'})
         return {'error': 'parse failed'}
-    
-    response_dict
 
     return {
         'rating': response_dict["meta"]["branch_rating"],
-        'count': response_dict["meta"]["total_count"],
+        'count': response_dict["meta"]["branch_reviews_count"],
         'reviews': response_dict["reviews"]
     }
 

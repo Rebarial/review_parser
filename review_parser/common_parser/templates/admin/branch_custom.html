@@ -2,7 +2,7 @@
 {% load i18n %}
  
 {% block object-tools %}
- 
+{% if original.pk %}
 <form action="{% url 'admin:common_parser_branch_change' original.pk %}parse/" method="POST">
     {% csrf_token %}
     <input type="submit" value="{% trans 'Парсинг' %}" name="_parse"/>
@@ -19,6 +19,6 @@
     {% csrf_token %}
     <input type="submit" value="{% trans 'Парсинг vlru' %}" name="_parse"/>
  </form>
- 
+ {% endif %}
     {{ block.super }}
 {% endblock %}
