@@ -29,6 +29,9 @@ def create_review(data: dict)->bool:
     if "video" in data:
         data_rewiew["video"] = data["video"]
 
+    if "review_url" in data:
+        data_rewiew["review_url"] = data["review_url"]
+
     serializer_review = ReviewSerializer(data = data_rewiew)
     
     if serializer_review.is_valid():
@@ -38,7 +41,6 @@ def create_review(data: dict)->bool:
         print("Ошибки сериализатора:", serializer_review.errors)
         return False
     
-
 def get_or_create_Organization(inn: str, name:str) -> Organization:
         try:
             organization = Organization.objects.get(inn=inn)
@@ -79,8 +81,3 @@ def get_or_create_Branch(organization: str, address: str, url_name: str, url: st
             return None
     
     return branch
-
-
-    
-
-    

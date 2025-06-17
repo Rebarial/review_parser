@@ -12,6 +12,7 @@ import re
 from common_parser.tools.create_objects import get_or_create_Branch, get_or_create_Organization, create_review
 from common_parser.tools.parse_date_string import parse_date_string
 from loguru import logger
+from datetime import datetime
 
 logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="DEBUG")
 
@@ -84,7 +85,7 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     count = 0
     
     for review_block in review_blocks:
-
+            
             avatar_img_url = review_block.find_element(By.CSS_SELECTOR, '.user-icon-view__icon')
             style_attr = avatar_img_url.get_attribute('style')
             match = match = re.search(r'url\(["\']?(.*?)["\']?\)', style_attr)
@@ -109,7 +110,7 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
         
             stars_count = len(review_block.find_elements(By.CSS_SELECTOR, '.business-rating-badge-view__star._full'))
         
-            review_text = review_block.find_element(By.CSS_SELECTOR, '.business-review-view__body-text').text.strip()
+            review_text = review_block.find_element(By.CSS_SELECTOR, '.business-review-view__body').text.strip()
 
             try:
                 result.append(
@@ -153,6 +154,9 @@ def create_yandex_reviews(url: str, inn: str, org_name: str ="", address: str ="
         review_avg_name="yandex_review_avg",
         review_avg=dict_yandex['rating'],
     )
+
+    branch.yandex_parse_date = datetime.now()
+    branch.save()
 
     for d in dict_yandex['reviews']:
         d['branch'] = branch   

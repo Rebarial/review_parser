@@ -1,7 +1,7 @@
 from datetime import datetime
 from common_parser.models import Branch
 
-def convert_2gis_reviews_to_model_data(branch: Branch, review_data: dict) -> dict:
+def convert_2gis_reviews_to_model_data(branch: Branch, review_data: dict, url: str) -> dict:
     """
     Преобразует данные отзывов из 2GIS в объекты модели Review.
     
@@ -36,7 +36,8 @@ def convert_2gis_reviews_to_model_data(branch: Branch, review_data: dict) -> dic
         'published_date': published_date,
         'rating': review_data.get('rating', 5),
         'content': review_data.get('text', ''),
-        'provider': '2gis'
+        'provider': '2gis',
+        'review_url': url + "/tab/reviews/review/" + review_data.get('id', ''),
     }
     return review
     

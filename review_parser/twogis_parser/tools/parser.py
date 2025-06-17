@@ -6,6 +6,7 @@ from common_parser.tools.create_objects import get_or_create_Branch, get_or_crea
 from twogis_parser.tools.to_reviews import convert_2gis_reviews_to_model_data
 from loguru import logger
 from common_parser.models import Branch
+from datetime import datetime
 
 logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="DEBUG")
 
@@ -14,9 +15,12 @@ def create_2gis_reviews(url: str, inn: str, org_name: str ="", address: str ="",
     dict_2gis = parse(get_api_url_from_2gis(url, count or 50))
 
     new_dict = [1]
-    while len(new_dict):
-        new_dict = parse(get_api_url_from_2gis_offset(url, count or 50, len(dict_2gis['reviews'])))["reviews"]
-        dict_2gis['reviews'] += new_dict
+    try:
+        while len(new_dict):
+            new_dict = parse(get_api_url_from_2gis_offset(url, count or 50, len(dict_2gis['reviews'])))["reviews"]
+            dict_2gis['reviews'] += new_dict
+    except Exception:
+        print(Exception)
 
     branch = get_or_create_Branch(
         organization=get_or_create_Organization(inn, org_name),
@@ -29,10 +33,13 @@ def create_2gis_reviews(url: str, inn: str, org_name: str ="", address: str ="",
         review_avg = dict_2gis['rating']
     )
 
+    branch.twogis_parse_date = datetime.now()
+    branch.save()
+
     cnt = 0
 
     for review in dict_2gis['reviews']:
-        if create_review(convert_2gis_reviews_to_model_data(branch=branch, review_data=review)):
+        if create_review(convert_2gis_reviews_to_model_data(branch=branch, review_data=review, url=url)):
             cnt += 1
 
     return cnt
@@ -40,6 +47,7 @@ def create_2gis_reviews(url: str, inn: str, org_name: str ="", address: str ="",
 def get_api_url_from_2gis(url: str, limit: int = 50) -> str:
 
     pattern = r'/firm/(\d+)'
+    print(url)
     match = re.search(pattern, url)
     if match:
         firm_id = match.group(1)
