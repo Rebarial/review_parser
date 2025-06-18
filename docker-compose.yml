@@ -11,3 +11,47 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
+    depends_on:
+      - selenium
+  
+  selenium:
+    image: selenium/standalone-chrome
+    ports:
+      - "4444:4444"
+    shm_size: 2gb
+    environment:
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_SCREEN_DEPTH=24
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  celery:
+    build: .
+    command: celery -A review_parser worker --loglevel=info
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+      - web
+    environment:
+      - PYTHONUNBUFFERED=1
+    
+  celery_beat:
+    build: .
+    command: celery -A review_parser beat --loglevel=info
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+
+
+volumes:
+  redis_data:

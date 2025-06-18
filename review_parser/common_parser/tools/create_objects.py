@@ -7,7 +7,7 @@ def create_review(data: dict)->bool:
     existing_review = Review.objects.filter(
         branch=data["branch"],
         author=data["author"],
-        published_date=data["published_date"]
+        content=data["content"]
     ).exists()
 
     if existing_review:

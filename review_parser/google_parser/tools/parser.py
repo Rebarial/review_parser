@@ -50,9 +50,9 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
 
-    driver = webdriver.Chrome(
-      service=Service(ChromeDriverManager().install()),
-      options=options
+    driver = webdriver.Remote(
+        command_executor='http://selenium:4444/wd/hub',
+        options=options
     )
     result = []
     
@@ -75,7 +75,7 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     time.sleep(3)
 
     reviews_counter = int(wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.F7nice'))).text.split('(')[1].split(')')[0])
-    
+
     try:
         stars_block = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.F7nice')))
     except Exception as e:
@@ -188,8 +188,6 @@ def create_google_reviews(url: str, inn: str, org_name: str ="", address: str ="
 
     if not dict_google:
         dict_google = parse(url)
-        
-    print(dict_google)
 
     branch = get_or_create_Branch(
         organization=get_or_create_Organization(inn, org_name),

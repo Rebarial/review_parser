@@ -242,7 +242,6 @@ def parse_filter_string(filter_str):
     - не равно: field!=value → ~Q(field=value)
     - другие операторы: field__operator=value → Q(field__operator=value)
     - отрицание операторов: !field__operator=value → ~Q(field__operator=value)
-
     """
     conditions = Q()
     

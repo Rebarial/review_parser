@@ -24,9 +24,9 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
 
-    driver = webdriver.Chrome(
-      service=Service(ChromeDriverManager().install()),
-      options=options
+    driver = webdriver.Remote(
+        command_executor='http://selenium:4444/wd/hub',
+        options=options
     )
     result = []
     
@@ -141,8 +141,6 @@ def create_yandex_reviews(url: str, inn: str, org_name: str ="", address: str ="
 
     if not dict_yandex:
         dict_yandex = parse(url)
-        
-    print(dict_yandex)
 
     branch = get_or_create_Branch(
         organization=get_or_create_Organization(inn, org_name),
