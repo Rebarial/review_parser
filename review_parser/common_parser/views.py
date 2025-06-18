@@ -9,25 +9,33 @@ from .models import Branch, Review, BranchIPMapping
 import json
 from rest_framework import serializers
 from .serializers import ReviewSerializer, BranchSerializer
-from django.db.models import Count
+from django.db.models import Count, Q
 
 class ProviderSerializer(serializers.Serializer):
     provider = serializers.CharField()
     count = serializers.IntegerField()
 
+PROVIDER_CHOICES = [
+    'yandex',
+    'google',
+    '2gis',
+    'vlru'
+]
 
 @swagger_auto_schema(
     method="GET",
     manual_parameters=[
         openapi.Parameter('branch_id', openapi.IN_QUERY, description="Идентификатор филиала", type=openapi.TYPE_STRING, required=True),
+        openapi.Parameter('only_providers', openapi.IN_QUERY, description="Только из списка провайдеров", type=openapi.TYPE_BOOLEAN, required=False),
         openapi.Parameter('providers', openapi.IN_QUERY,
                   description="Список провайдеров",
                   type=openapi.TYPE_ARRAY,
-                  items=openapi.Schema(
+                  items=openapi.Items(
                       type=openapi.TYPE_OBJECT,
                       properties={
-                          'provider': openapi.Schema(type=openapi.TYPE_STRING, title="Название провайдера"),
-                          'count': openapi.Schema(type=openapi.TYPE_INTEGER, title="Количество записей")
+                          'provider': openapi.Schema(type=openapi.TYPE_STRING, title="Название провайдера", enum=PROVIDER_CHOICES),
+                          'count': openapi.Schema(type=openapi.TYPE_INTEGER, title="Количество записей"),
+                          'filters': openapi.Schema(type=openapi.TYPE_STRING, title="Фильтры"),
                       },),
                   required=False),
     ],
@@ -78,16 +86,27 @@ def get_reviews(request):
 
     branch = Branch.objects.get(id = branch_id)
 
+    only_providers = request.query_params.get('only_providers')
+    if only_providers:
+        only_providers = only_providers.lower() == 'true'
+    else:
+        only_providers = False
+
     reviews_data = []
     if providers:
         providers = json.loads(providers)
-        print(providers)
         for prov in providers:
-            print(prov)
+            predata = Review.objects.filter(branch=branch, provider=prov["provider"]).order_by('published_date')
+            if "filters" in prov and prov["filters"]:
+                predata = predata.filter(parse_filter_string(prov["filters"]))
             if prov["count"]:
-                reviews_data += ReviewSerializer(Review.objects.filter(branch=branch, provider=prov["provider"]).order_by('published_date')[:prov["count"]], many=True).data
+                reviews_data += ReviewSerializer(predata[:prov["count"]], many=True).data
             else:
-                reviews_data += ReviewSerializer(Review.objects.filter(branch=branch, provider=prov["provider"]).order_by('published_date'), many=True).data
+                reviews_data += ReviewSerializer(predata, many=True).data
+
+        if not only_providers:
+            provider_to_exclude = [item['provider'] for item in providers]
+            reviews_data += ReviewSerializer(Review.objects.filter(branch=branch).exclude(provider__in=provider_to_exclude), many=True).data
  
             
     else:
@@ -110,17 +129,19 @@ def get_reviews(request):
 @swagger_auto_schema(
     method="GET",
         manual_parameters=[
-        openapi.Parameter('providers', openapi.IN_QUERY,
-                  description="Список провайдеров",
-                  type=openapi.TYPE_ARRAY,
-                  items=openapi.Schema(
-                      type=openapi.TYPE_OBJECT,
-                      properties={
-                          'provider': openapi.Schema(type=openapi.TYPE_STRING, title="Название провайдера"),
-                          'count': openapi.Schema(type=openapi.TYPE_INTEGER, title="Количество записей")
-                      },),
-                  required=False),
-    ],
+            openapi.Parameter('only_providers', openapi.IN_QUERY, description="Только из списка провайдеров", type=openapi.TYPE_BOOLEAN, required=False),
+            openapi.Parameter('providers', openapi.IN_QUERY,
+                    description="Список провайдеров",
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'provider': openapi.Schema(type=openapi.TYPE_STRING, title="Название провайдера", enum=PROVIDER_CHOICES),
+                            'count': openapi.Schema(type=openapi.TYPE_INTEGER, title="Количество записей"),
+                            'filters': openapi.Schema(type=openapi.TYPE_STRING, title="Фильтры"),
+                        },),
+                    required=False),
+        ],
         responses={200: '''
                         "ip",
                         "branch": [{
@@ -170,6 +191,12 @@ def get_reviews_by_ip(request):
     for mapping in objects_with_ip:
         branches.append(mapping.branch)
 
+    only_providers = request.query_params.get('only_providers')
+    if only_providers:
+        only_providers = only_providers.lower() == 'true'
+    else:
+        only_providers = False
+
     providers = request.query_params.get('providers')
     if providers:
         providers = "[" + providers + "]"
@@ -177,13 +204,18 @@ def get_reviews_by_ip(request):
     reviews_data = []
     if providers:
         providers = json.loads(providers)
-        print(providers)
         for prov in providers:
-            print(prov)
+            predata = Review.objects.filter(branch__in=branches, provider=prov["provider"]).order_by('published_date')
+            if "filters" in prov and prov["filters"]:
+                predata = predata.filter(parse_filter_string(prov["filters"]))
             if prov["count"]:
-                reviews_data += ReviewSerializer(Review.objects.filter(branch__in=branches, provider=prov["provider"]).order_by('published_date')[:prov["count"]], many=True).data
+                reviews_data += ReviewSerializer(predata[:prov["count"]], many=True).data
             else:
-                reviews_data += ReviewSerializer(Review.objects.filter(branch__in=branches, provider=prov["provider"]).order_by('published_date'), many=True).data
+                reviews_data += ReviewSerializer(predata, many=True).data
+        
+        if not only_providers:
+            provider_to_exclude = [item['provider'] for item in providers]
+            reviews_data += ReviewSerializer(Review.objects.filter(branch__in=branches).exclude(provider__in=provider_to_exclude), many=True).data
  
             
     else:
@@ -201,3 +233,50 @@ def get_reviews_by_ip(request):
             }
     
     return Response(data)
+
+def parse_filter_string(filter_str):
+    """
+    Парсит строку фильтра в Q-объекты для Django ORM.
+    Поддерживает:
+    - равенство: field=value → Q(field=value)
+    - не равно: field!=value → ~Q(field=value)
+    - другие операторы: field__operator=value → Q(field__operator=value)
+    - отрицание операторов: !field__operator=value → ~Q(field__operator=value)
+
+    """
+    conditions = Q()
+    
+    if not filter_str:
+        return conditions
+    
+    for part in filter_str.split('&'):
+        if not part:
+            continue
+        
+        if '!=' in part:
+            key, value = part.split('!=', 1)
+            q_object = ~Q(**{key: value})
+        elif '=' in part:
+            key, value = part.split('=', 1)
+            negate = False
+            
+            if key.startswith('!'):
+                negate = True
+                key = key[1:]
+            
+            if key.endswith('__in'):
+                value_list = [v.strip() for v in value.split(',') if v.strip()]
+                q_object = Q(**{key: value_list})
+
+            elif key.endswith('__isnull'):
+                q_object = Q(**{key: value.lower() == 'true'})
+            else:
+                q_object = Q(**{key: value})
+            if negate:
+                q_object = ~q_object
+        else:
+            continue 
+            
+        conditions &= q_object
+    
+    return conditions
