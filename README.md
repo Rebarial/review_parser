@@ -39,6 +39,44 @@ http://185.104.113.137:8000/swagger/
 В provider_reviews_count – количество отзывов по провайдером в БД
 В reviews – сами отзывы. Photos – ссылки на картинки через запятую.
 
+## Фильтры и параметры в запросе на получения отзывов
+
+Параметр "only_providers": True отвечает за то, что в результате будут только провайдеры из массива providers.
+
+Фильтры пишутся в параметре "filters" элемента параметра "providers":
+
+{
+
+  "provider": "2gis",
+  
+  "count": 0,
+  
+  "filters": "avatar__isnull=false&rating__gt=4"
+  
+}
+
+Примеры фильтров (фильтр в запросе → какой результат будет). Фильтры можно соединять конструкцией И через "&" между ними
+
+    - author=test
+    
+    - author!=test
+    
+    - rating__gt=4 → rating > 4
+    
+    - rating__lt=5 → rating < 5
+    
+    - author__icontains=test → test in author
+    
+    - !author__icontains=test → not test in author
+    
+    - rating__in=1,2,3 → rating in 1,2,3
+    
+    - !rating__in=1,2,3 → not rating in 1,2,3
+    
+    - avatar__isnull=true → avatar = null
+    
+    - avatar__isnull=false → avatar != null
+
 ## Ручной парсинг
 
 Если при создании был неудачный парсинг или понадобилось запарсить вручную. Можно зайти в ветку и нажать на кнопки парсинга:
@@ -46,6 +84,5 @@ http://185.104.113.137:8000/swagger/
 ![image](https://github.com/user-attachments/assets/5ca2a34d-4d89-48a2-a3f2-7cc2c592c237)
 
 ![image](https://github.com/user-attachments/assets/eae6e6a4-3cc9-43aa-8852-a84023af8a39)
-
 
 
