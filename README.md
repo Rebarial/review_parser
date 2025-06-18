@@ -39,3 +39,13 @@ http://185.104.113.137:8000/swagger/
 В provider_reviews_count – количество отзывов по провайдером в БД
 В reviews – сами отзывы. Photos – ссылки на картинки через запятую.
 
+## Ручной парсинг
+
+Если при создании был неудачный парсинг или понадобилось запарсить вручную. Можно зайти в ветку и нажать на кнопки парсинга:
+
+![image](https://github.com/user-attachments/assets/5ca2a34d-4d89-48a2-a3f2-7cc2c592c237)
+
+![image](https://github.com/user-attachments/assets/eae6e6a4-3cc9-43aa-8852-a84023af8a39)
+
+
+
