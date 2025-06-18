@@ -123,7 +123,7 @@ def get_reviews(request):
     ],
         responses={200: '''
                         "ip",
-                        "branch": {
+                        "branch": [{
                             "id",
                             "address",
                             "yandex_map_url",
@@ -134,7 +134,7 @@ def get_reviews(request):
                             "vlru_review_count",
                             "vlru_review_avg",
                             "organization"
-                        },
+                        }],
                         'provider_reviews_count': [
                             {
                                 "provider",

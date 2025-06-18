@@ -12,6 +12,7 @@ from twogis_parser.tools.parser import create_2gis_reviews
 from yandex_parser.tools.parser import create_yandex_reviews
 from vl_parser.tools.parser import create_vlru_reviews
 from common_parser.tools.parse import parse_all_providers
+from google_parser.tools.parser import create_google_reviews
 
 class BranchInline(NestedStackedInline):
     model = Branch
@@ -39,6 +40,14 @@ class BranchAdmin(NestedModelAdmin):
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
     
+    def parsing_google(self, request, object_id=None):  
+        
+        branch = Branch.objects.get(id=object_id)
+
+        create_google_reviews(url=branch.google_map_url, inn=branch.organization.inn, address=branch.address)
+
+        return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
+    
     def parsing_2gis(self, request, object_id=None):  
         
         branch = Branch.objects.get(id=object_id)
@@ -61,6 +70,7 @@ class BranchAdmin(NestedModelAdmin):
         my_urls = [
             path('<path:object_id>/change/parse/', self.admin_site.admin_view(self.parsing)),
             path('<path:object_id>/change/parse-yandex/', self.admin_site.admin_view(self.parsing_yandex)),
+            path('<path:object_id>/change/parse-google/', self.admin_site.admin_view(self.parsing_google)),
             path('<path:object_id>/change/parse-2gis/', self.admin_site.admin_view(self.parsing_2gis)),
             path('<path:object_id>/change/parse-vlru/', self.admin_site.admin_view(self.parsing_vlru)),
         ]
