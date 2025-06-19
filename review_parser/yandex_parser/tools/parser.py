@@ -18,15 +18,15 @@ logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="
 
 @logger.catch
 def parse(url:str, limit:Optional[int] = None) -> list[dict]:
-    options = Options()
-    options.add_argument('--headless')
+    #options = Options()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless=new')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--single-process') 
     options.add_argument('--disable-gpu')
-    options.add_argument('--single-process')
-    options.add_argument('--window-size=1920,1080')
-    options.add_argument('--remote-debugging-port=9222')
-    options.add_argument('--remote-debugging-address=0.0.0.0')
+    options.add_argument('--disable-software-rasterizer')
+    options.add_argument('--disable-extensions')
 
     driver = webdriver.Remote(
         command_executor='http://selenium:4444/wd/hub',
@@ -34,8 +34,11 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     )
     result = []
     
+    driver.set_page_load_timeout(120)  # 120 секунд вместо 30
+    driver.implicitly_wait(30)
 
     driver.get(url)
+    
     wait = WebDriverWait(driver, 20)
 
     time.sleep(3)
