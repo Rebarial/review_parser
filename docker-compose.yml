@@ -15,17 +15,16 @@ services:
       - selenium
   
   selenium:
-    image: selenium/standalone-chrome
+    image: selenium/standalone-chrome:4.1.0-20211123
+    shm_size: "2gb"
     ports:
       - "4444:4444"
-    shm_size: 2gb
     environment:
       - SE_SCREEN_WIDTH=1920
       - SE_SCREEN_HEIGHT=1080
-      - SE_SCREEN_DEPTH=24
       - SE_NODE_MAX_SESSIONS=5
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_START_VNC=false
       
 
   redis:
