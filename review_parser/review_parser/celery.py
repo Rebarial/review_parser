@@ -13,7 +13,7 @@ app = Celery('review_parser')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.broker_connection_retry_on_startup = True
 app.conf.broker_connection_retry = True
-app.conf.broker_connection_max_retries = 3
+app.conf.broker_connection_max_retries = 1
 
 # Настройка периодических задач
 app.conf.beat_schedule = {

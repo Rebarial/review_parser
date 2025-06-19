@@ -15,15 +15,15 @@ services:
       - selenium
   
   selenium:
-    image: selenium/standalone-chrome:4.1.0-20211123
-    shm_size: "2gb"
+    image: selenium/standalone-chrome
+    shm_size: "512m"
     ports:
       - "4444:4444"
     environment:
       - SE_SCREEN_WIDTH=1920
       - SE_SCREEN_HEIGHT=1080
-      - SE_NODE_MAX_SESSIONS=5
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=false
       - SE_START_VNC=false
       
 
@@ -36,7 +36,7 @@ services:
 
   celery:
     build: .
-    command: celery -A review_parser worker --loglevel=info
+    command: celery -A review_parser worker --loglevel=info --pool=solo --concurrency=1
     volumes:
       - .:/code
     depends_on: 
