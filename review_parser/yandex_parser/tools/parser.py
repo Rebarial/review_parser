@@ -19,14 +19,10 @@ logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="
 @logger.catch
 def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     chrome_options = Options()
+    chrome_options.add_argument('--headless')
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--incognito")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--disable-webrtc")
-    chrome_options.add_argument("--hide-scrollbars")
-    chrome_options.add_argument("--disable-notifications")
-    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--window-size=1920,1080')
     
     driver = webdriver.Chrome(
       service=Service(ChromeDriverManager().install()),
