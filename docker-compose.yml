@@ -19,21 +19,12 @@ services:
     ports:
       - "4444:4444"
     shm_size: 2gb
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 2G
     environment:
       - SE_SCREEN_WIDTH=1920
       - SE_SCREEN_HEIGHT=1080
       - SE_SCREEN_DEPTH=24
       - SE_NODE_MAX_SESSIONS=5
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-      - SE_NODE_SESSION_TIMEOUT=300
-      - SE_SESSION_RETRY_INTERVAL=10
-      - SE_START_VNC=false
-      - JAVA_OPTS=-Xms1g -Xmx1g 
 
   redis:
     image: redis:alpine
