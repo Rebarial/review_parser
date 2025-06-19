@@ -9,6 +9,8 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect
 from common_parser.tasks import parse_all_providers_async, parse_2gis_async, parse_google_async, parse_vlru_async, parse_yandex_async
+from yandex_parser.tools.parser import create_yandex_reviews
+from django.shortcuts import get_object_or_404
 
 class BranchInline(NestedStackedInline):
     model = Branch
@@ -29,6 +31,7 @@ class BranchAdmin(NestedModelAdmin):
     def parsing_yandex(self, request, object_id=None):  
 
         parse_yandex_async.delay(object_id)
+        #create_yandex_reviews(url=branch.yandex_map_url, inn=branch.organization.inn, address=branch.address)
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
     

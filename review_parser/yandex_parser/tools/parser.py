@@ -27,9 +27,9 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     chrome_options.add_argument("--disable-notifications")
     chrome_options.add_argument("--start-maximized")
     
-    driver = webdriver.Remote(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options,
+    driver = webdriver.Chrome(
+      service=Service(ChromeDriverManager().install()),
+      options=chrome_options
     )
     result = []
 
