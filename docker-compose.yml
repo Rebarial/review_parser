@@ -25,6 +25,8 @@ services:
       - SE_SCREEN_DEPTH=24
       - SE_NODE_MAX_SESSIONS=5
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+      - SE_NODE_SESSION_TIMEOUT=300
+      
 
   redis:
     image: redis:alpine
