@@ -28,7 +28,7 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     chrome_options.add_argument("--start-maximized")
     
     driver = webdriver.Remote(
-        command_executor='http://selenium:4444/wd/hub',
+        service=Service(ChromeDriverManager().install()),
         options=chrome_options,
     )
     result = []
