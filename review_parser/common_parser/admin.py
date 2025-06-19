@@ -8,11 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect
-from twogis_parser.tools.parser import create_2gis_reviews
-from yandex_parser.tools.parser import create_yandex_reviews
-from vl_parser.tools.parser import create_vlru_reviews
-from common_parser.tools.parse import parse_all_providers
-from google_parser.tools.parser import create_google_reviews
+from common_parser.tasks import parse_all_providers_async, parse_2gis_async, parse_google_async, parse_vlru_async, parse_yandex_async
 
 class BranchInline(NestedStackedInline):
     model = Branch
@@ -25,42 +21,32 @@ class BranchAdmin(NestedModelAdmin):
     list_filter = ('organization',)
 
     def parsing(self, request, object_id=None):  
-        
-        branch = Branch.objects.get(id=object_id)
 
-        parse_all_providers(branch)
+        parse_all_providers_async.delay(object_id)
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
     
     def parsing_yandex(self, request, object_id=None):  
-        
-        branch = Branch.objects.get(id=object_id)
 
-        create_yandex_reviews(url=branch.yandex_map_url, inn=branch.organization.inn, address=branch.address)
+        parse_yandex_async.delay(object_id)
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
     
     def parsing_google(self, request, object_id=None):  
-        
-        branch = Branch.objects.get(id=object_id)
 
-        create_google_reviews(url=branch.google_map_url, inn=branch.organization.inn, address=branch.address)
+        parse_google_async.delay(object_id)
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
     
     def parsing_2gis(self, request, object_id=None):  
-        
-        branch = Branch.objects.get(id=object_id)
 
-        create_2gis_reviews(url=branch.twogis_map_url, inn=branch.organization.inn, address=branch.address)
+        parse_2gis_async.delay(object_id)
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
     
     def parsing_vlru(self, request, object_id=None):  
-        
-        branch = Branch.objects.get(id=object_id)
 
-        create_vlru_reviews(branch.vlru_url, branch.organization.inn, address=branch.address)
+        parse_vlru_async.delay(object_id)
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
 

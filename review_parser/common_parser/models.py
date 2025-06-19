@@ -22,8 +22,7 @@ class Branch(models.Model):
     yandex_map_url = models.URLField(max_length=1500, null=True, blank=True)
     twogis_map_url = models.URLField(max_length=500, null=True, blank=True)
     vlru_url = models.URLField(max_length=500, null=True, blank=True)
-    vlru_org_id = models.CharField(max_length=16, null=True, blank=True)
-    vlru_parse_date = models.DateTimeField(blank=True, null=True)
+    vlru_org_id = models.CharField(max_length=16, null=True, blank=True) 
     google_review_count = models.IntegerField(null=True, blank=True)
     google_review_avg = models.FloatField(null=True, blank=True)
     google_parse_date = models.DateTimeField(blank=True, null=True)
@@ -33,18 +32,26 @@ class Branch(models.Model):
     twogis_review_count = models.IntegerField(null=True, blank=True)
     twogis_review_avg = models.FloatField(null=True, blank=True)
     twogis_parse_date = models.DateTimeField(blank=True, null=True)
+    vlru_parse_date = models.DateTimeField(blank=True, null=True)
     vlru_review_count = models.IntegerField(null=True, blank=True)
     vlru_review_avg = models.FloatField(null=True, blank=True)
-    
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['organization', 'address'],
+                name='unique_organization_address'
+            )
+        ]
+
     def __str__(self):
         return f'{self.id} : {self.organization}: {self.address[:50]}'
 
 @receiver(post_save, sender=Branch)
 def send_notification(sender, instance, created, **kwargs):
     if created:
-        from common_parser.tools.parse import parse_all_providers
-        print(instance)
-        parse_all_providers(instance)
+        from common_parser.tasks import parse_all_providers_async_on_create
+        parse_all_providers_async_on_create.delay(instance.organization.id, instance.address)
 
 
 class Review(models.Model):

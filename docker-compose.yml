@@ -38,7 +38,7 @@ services:
     command: celery -A review_parser worker --loglevel=info
     volumes:
       - .:/code
-    depends_on:
+    depends_on: 
       - redis
       - web
     environment:

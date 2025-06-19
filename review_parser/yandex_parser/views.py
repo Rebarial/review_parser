@@ -11,23 +11,7 @@ from common_parser.tools.parse_date_string import parse_date_string
 from yandex_parser.tools.parser import parse, create_yandex_reviews
 from rest_framework.decorators import api_view
 
-@swagger_auto_schema(
-    method='POST',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'inn': openapi.Schema(type=openapi.TYPE_STRING, description="ИНН организации"),
-            'org_name': openapi.Schema(type=openapi.TYPE_STRING, description="Название организации (опционально)"),
-            'address': openapi.Schema(type=openapi.TYPE_STRING, description="Адрес (опционально)"),
-            'url': openapi.Schema(type=openapi.TYPE_STRING, description="Ссылка на Яндекс.Карту"),
-            'count': openapi.Schema(type=openapi.TYPE_INTEGER, description="Количество (опционально)"),
-            
-        },
-        required=["inn", "url"] 
-    ),
-    responses={201: "Объекты успешно созданы", 400: "Некорректные данные"}
-)
-@api_view(['POST'])
+
 def parse_yandex(request):
     data = request.data
     inn = data.get('inn')
