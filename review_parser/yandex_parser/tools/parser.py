@@ -139,9 +139,6 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
 def create_yandex_reviews(url: str, inn: str, org_name: str ="", address: str ="", count: str = 50) -> int:
     dict_yandex = parse(url)
 
-    if not dict_yandex:
-        dict_yandex = parse(url)
-
     branch = get_or_create_Branch(
         organization=get_or_create_Organization(inn, org_name),
         address=address,

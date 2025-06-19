@@ -186,9 +186,6 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
 def create_google_reviews(url: str, inn: str, org_name: str ="", address: str ="", count: str = 50) -> int:
     dict_google = parse(url)
 
-    if not dict_google:
-        dict_google = parse(url)
-
     branch = get_or_create_Branch(
         organization=get_or_create_Organization(inn, org_name),
         address=address,
