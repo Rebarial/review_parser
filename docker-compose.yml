@@ -22,7 +22,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
+          cpus: '0.5'
           memory: 2G
     environment:
       - SE_SCREEN_WIDTH=1920
