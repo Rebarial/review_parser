@@ -41,7 +41,7 @@ class BranchAdmin(NestedModelAdmin):
 
         #parse_google_async.delay(object_id)
         branch = get_object_or_404(Branch, id=object_id)
-        create_google_reviews(url=branch.yandex_map_url, inn=branch.organization.inn, address=branch.address)
+        create_google_reviews(url=branch.google_map_url, inn=branch.organization.inn, address=branch.address)
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_branch_changelist'))
     
