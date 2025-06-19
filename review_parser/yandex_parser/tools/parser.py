@@ -18,27 +18,22 @@ logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="
 
 @logger.catch
 def parse(url:str, limit:Optional[int] = None) -> list[dict]:
-    #options = Options()
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless=new')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--single-process') 
-    options.add_argument('--disable-gpu')
-    options.add_argument('--disable-software-rasterizer')
-    options.add_argument('--disable-extensions')
-
+    chrome_options = Options()
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-webrtc")
+    chrome_options.add_argument("--hide-scrollbars")
+    chrome_options.add_argument("--disable-notifications")
+    chrome_options.add_argument("--start-maximized")
+    
     driver = webdriver.Remote(
         command_executor='http://selenium:4444/wd/hub',
-        options=options
+        options=chrome_options,
     )
     result = []
-    
-    driver.set_page_load_timeout(120)  # 120 секунд вместо 30
-    driver.implicitly_wait(30)
 
     driver.get(url)
-    
     wait = WebDriverWait(driver, 20)
 
     time.sleep(3)
@@ -156,6 +151,12 @@ def create_yandex_reviews(url: str, inn: str, org_name: str ="", address: str ="
         review_avg_name="yandex_review_avg",
         review_avg=dict_yandex['rating'],
     )
+
+    print(branch)
+
+    print(get_or_create_Organization(inn, org_name))
+
+    print(address)
 
     branch.yandex_parse_date = datetime.now()
     branch.save()
