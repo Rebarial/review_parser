@@ -24,7 +24,7 @@ def weekly_parsing():
     return (trys, count)
 
 
-@shared_task
+@shared_task(name='parse_all_providers_async_on_create')
 def parse_all_providers_async_on_create(branch_org_id, branch_address):
     try:
         branch = Branch.objects.get(
@@ -37,27 +37,37 @@ def parse_all_providers_async_on_create(branch_org_id, branch_address):
     except Exception as e:
         logger.error(f"Error in parse_all_providers_async_on_create: {e}")
 
-@shared_task
+@shared_task(name='parse_all_providers_async')
 def parse_all_providers_async(branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
-    return parse_all_providers(branch)
+    return {'branch_id': branch_id,
+            'results': parse_all_providers(branch)
+            }
 
-@shared_task
+@shared_task(name='parse_yandex_async')
 def parse_yandex_async(branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
-    return create_yandex_reviews(url=branch.yandex_map_url, inn=branch.organization.inn, address=branch.address)
+    return {'branch_id': branch_id,
+            'results': create_yandex_reviews(url=branch.yandex_map_url, inn=branch.organization.inn, address=branch.address)
+            }
 
-@shared_task
+@shared_task(name='parse_google_async')
 def parse_google_async(branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
-    return create_google_reviews(url=branch.google_map_url, inn=branch.organization.inn, address=branch.address)
+    return {'branch_id': branch_id,
+            'results': create_google_reviews(url=branch.google_map_url, inn=branch.organization.inn, address=branch.address)
+            }
 
-@shared_task
+@shared_task(name='parse_vlru_async')
 def parse_vlru_async(branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
-    return create_vlru_reviews(branch.vlru_url, branch.organization.inn, address=branch.address)
+    return {'branch_id': branch_id,
+            'results': create_vlru_reviews(branch.vlru_url, branch.organization.inn, address=branch.address),
+            }
 
-@shared_task
+@shared_task(name='parse_2gis_async')
 def parse_2gis_async(branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
-    return create_2gis_reviews(url=branch.twogis_map_url, inn=branch.organization.inn, address=branch.address)
+    return {'branch_id': branch_id,
+            'results': create_2gis_reviews(url=branch.twogis_map_url, inn=branch.organization.inn, address=branch.address)
+            }
