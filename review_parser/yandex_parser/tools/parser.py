@@ -1,11 +1,7 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from common_parser.tools.selenium_controle import selenium_get_driver, wait_time, max_scrolls
 import time
 from typing import Optional
 import re
@@ -18,20 +14,12 @@ logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="
 
 @logger.catch
 def parse(url:str, limit:Optional[int] = None) -> list[dict]:
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--window-size=1920,1080')
     
-    driver = webdriver.Chrome(
-      service=Service(ChromeDriverManager().install()),
-      options=chrome_options
-    )
+    driver = selenium_get_driver()
     result = []
 
     driver.get(url)
-    wait = WebDriverWait(driver, 20)
+    wait = WebDriverWait(driver, wait_time)
 
     time.sleep(3)
 
@@ -52,7 +40,6 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
     time.sleep(3)
     # Переключаемся на вкладку "Отзывы"
     driver.execute_script("arguments[0].click();", reviews_tab)
-    #reviews_tab.click()
 
     time.sleep(3)
 
@@ -60,7 +47,7 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
 
     last_height = driver.execute_script('return arguments[0].scrollHeight;', scroll)
 
-    max_scroll_attempts = 10
+    max_scroll_attempts = max_scrolls
 
     scroll_count = 0
 
