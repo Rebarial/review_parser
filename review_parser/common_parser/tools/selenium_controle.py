@@ -6,7 +6,6 @@ from selenium.webdriver import Chrome
 
 wait_time = 10
 max_scrolls = 5
-CHROME_DRIVER_VERSION = "137.0.7151.68"
 
 def selenium_get_driver():
     chrome_options = Options()
@@ -16,6 +15,6 @@ def selenium_get_driver():
     chrome_options.add_argument('--window-size=40,1080')
 
     return Chrome(
-      service=Service(ChromeDriverManager(version=CHROME_DRIVER_VERSION).install()),
+      service=Service(ChromeDriverManager().install()),
       options=chrome_options
     )
