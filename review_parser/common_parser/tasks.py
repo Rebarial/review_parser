@@ -13,15 +13,11 @@ logger.add("debug.log", enqueue=True, format="{time} {level} {message}", level="
 def weekly_parsing():
     branches = Branch.objects.all()
 
-    trys = 0
-    count = 0
-
+    dict_results = {}
     for branch in branches:
-        res = parse_all_providers(branch)
-        trys += res[0]
-        count += res[1]
+        dict_results[f"{branch.id}"] = parse_all_providers(branch)
 
-    return (trys, count)
+    return dict_results
 
 
 @shared_task(name='parse_all_providers_async_on_create')
