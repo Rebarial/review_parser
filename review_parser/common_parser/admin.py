@@ -12,6 +12,9 @@ from common_parser.tasks import parse_all_providers_async, parse_2gis_async, par
 from yandex_parser.tools.parser import create_yandex_reviews
 from google_parser.tools.parser import create_google_reviews
 from django.shortcuts import get_object_or_404
+from django_celery_results.admin import TaskResultAdmin
+from django_celery_results.models import TaskResult
+
 
 class BranchInline(NestedStackedInline):
     model = Branch

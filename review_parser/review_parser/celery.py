@@ -11,6 +11,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'review_parser.settings')
 
 app = Celery('review_parser')
 app.config_from_object('django.conf:settings', namespace='CELERY')
+app.conf.result_backend = 'django-db'
 app.conf.broker_connection_retry_on_startup = True
 app.conf.broker_connection_retry = True
 app.conf.broker_connection_max_retries = 1
