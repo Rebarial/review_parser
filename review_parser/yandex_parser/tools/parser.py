@@ -96,6 +96,16 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
         
             stars_count = len(review_block.find_elements(By.CSS_SELECTOR, '.business-rating-badge-view__star._full'))
         
+            review_text = review_block.find_element(By.CSS_SELECTOR, '.business-review-view__body')
+
+            try:
+                button = review_text.find_element(By.CSS_SELECTOR, '.business-review-view__expand')
+                if button:
+                    button.click()
+
+            except Exception as e:
+                pass
+
             review_text = review_block.find_element(By.CSS_SELECTOR, '.business-review-view__body').text.strip()
 
             try:
