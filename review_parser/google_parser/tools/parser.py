@@ -99,9 +99,9 @@ def parse(url:str, limit:Optional[int] = None) -> list[dict]:
         last_height = new_height
         scroll_count += 1
     try:
-        review_blocks = wait.until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, '.jftiEf.fontBodyMedium')))
-    except:
         review_blocks = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//div[@class='jftiEf.fontBodyMedium']")))
+    except:
+        review_blocks = wait.until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, '.jftiEf.fontBodyMedium')))
 
     count = 0
     
