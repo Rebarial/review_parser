@@ -195,4 +195,4 @@ def create_google_reviews(url: str, inn: str, org_name: str ="", address: str ="
         if create_review(review):
             cnt += 1
 
-    return cnt
+    return (len(dict_google['reviews']), cnt)

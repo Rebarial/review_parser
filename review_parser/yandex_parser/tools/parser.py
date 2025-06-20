@@ -136,12 +136,6 @@ def create_yandex_reviews(url: str, inn: str, org_name: str ="", address: str ="
         review_avg=dict_yandex['rating'],
     )
 
-    print(branch)
-
-    print(get_or_create_Organization(inn, org_name))
-
-    print(address)
-
     branch.yandex_parse_date = datetime.now()
     branch.save()
 
@@ -154,4 +148,4 @@ def create_yandex_reviews(url: str, inn: str, org_name: str ="", address: str ="
         if create_review(review):
             cnt += 1
 
-    return cnt
+    return (len(dict_yandex['reviews']), cnt)

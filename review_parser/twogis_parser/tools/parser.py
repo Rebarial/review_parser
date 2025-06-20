@@ -42,7 +42,7 @@ def create_2gis_reviews(url: str, inn: str, org_name: str ="", address: str ="",
         if create_review(convert_2gis_reviews_to_model_data(branch=branch, review_data=review, url=url)):
             cnt += 1
 
-    return cnt
+    return (len(dict_2gis['reviews']), cnt)
 
 def get_api_url_from_2gis(url: str, limit: int = 50) -> str:
 
