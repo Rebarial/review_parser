@@ -123,7 +123,7 @@ class Playlist(models.Model):
 def send_notification(sender, instance, created, **kwargs):
     if created:
         from common_parser.tasks import parse_youtube_videos_async
-        parse_youtube_videos_async(instance.id)
+        parse_youtube_videos_async.delay(instance.id)
 
 class Video(models.Model):
     url = models.URLField()
