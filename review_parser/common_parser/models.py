@@ -95,3 +95,56 @@ class BranchIPMapping(models.Model):
     
     def __str__(self):
         return f"{self.ip_address} → Филиал {self.branch.id} : {self.branch.address}"
+    
+
+
+
+class Playlist(models.Model):
+
+    PROVIDER_CHOICES = [
+        ('youtube', 'Ютуб'),
+        ('vk', 'Вк'),
+    ]
+
+    title = models.CharField(max_length=255, blank=True, null=True)
+    count = models.PositiveIntegerField(blank=True, null=True, default=None)
+    url = models.URLField(unique=True)
+    parse_date = models.DateTimeField(blank=True, null=True)
+    provider = models.CharField(
+        max_length=50,
+        choices=PROVIDER_CHOICES,
+        null=True, blank=True
+    )
+    
+    def __str__(self):
+        return self.title or self.url
+
+@receiver(post_save, sender=Playlist)
+def send_notification(sender, instance, created, **kwargs):
+    if created:
+        from common_parser.tasks import parse_youtube_videos_async
+        parse_youtube_videos_async(instance.id)
+
+class Video(models.Model):
+    url = models.URLField()
+    title = models.CharField(max_length=255, blank=True, null=True)
+    author = models.CharField(max_length=255, blank=True, null=True)
+    date = models.DateTimeField(blank=True, null=True)
+    preview = models.URLField(blank=True, null=True)
+    duration = models.IntegerField(blank=True, null=True, default=None)
+    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, related_name='videos')
+    
+    def __str__(self):
+        return self.title or self.url
+    
+
+class PlaylistIPMapping(models.Model):
+    playlist = models.ForeignKey(
+        Playlist,
+        on_delete=models.CASCADE,
+        related_name='ip_mappings_playlist'
+    )
+    ip_address = models.GenericIPAddressField()
+    
+    def __str__(self):
+        return f"{self.ip_address} → Playlist {self.playlist.id} : {self.playlist.title}"

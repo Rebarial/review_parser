@@ -1,6 +1,5 @@
-from common_parser.serializers import ReviewSerializer, OrganizationSerializer, BranchSerializer
-from common_parser.models import Review
-from common_parser.models import Review, Organization, Branch
+from common_parser.serializers import ReviewSerializer, OrganizationSerializer, BranchSerializer, VideoSerializer
+from common_parser.models import Review, Organization, Branch, Video, Playlist
 
 def create_review(data: dict)->bool:
     """Создает отзыв, если уже есть такой отзыв возвращает False"""
@@ -81,3 +80,42 @@ def get_or_create_Branch(organization: str, address: str, url_name: str, url: st
             return None
     
     return branch
+
+
+def get_or_create_playlist(data: dict)->Playlist:
+    playlist_url = data.get('url')
+    
+    try:
+        playlist = Playlist.objects.get(url=playlist_url)
+
+        for key, value in data.items():
+            setattr(playlist, key, value)
+
+        playlist.save()
+        return playlist
+    
+    except Playlist.DoesNotExist:
+
+        new_playlist = Playlist(**data)
+        new_playlist.save()
+
+        return new_playlist
+
+
+def create_video(data: dict)-> bool:
+    """Создает видео, если уже есть такое возвращает False"""
+    existing_review = Video.objects.filter(
+        url=data["url"]
+    ).exists()
+
+    if existing_review:
+        return False
+
+    serializer_video = VideoSerializer(data = data)
+    
+    if serializer_video.is_valid():
+        serializer_video.save()
+        return True
+    else:
+        print("Ошибки сериализатора:", serializer_video.errors)
+        return False
