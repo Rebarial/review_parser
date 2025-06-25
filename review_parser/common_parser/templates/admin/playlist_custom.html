@@ -11,6 +11,10 @@
    {% csrf_token %}
    <input type="submit" value="{% trans 'Парсинг ютуб' %}" name="_parse"/>
 </form>
+<form action="{% url 'admin:common_parser_playlist_change' original.pk %}parse-vk/" method="POST">
+   {% csrf_token %}
+   <input type="submit" value="{% trans 'Парсинг вк' %}" name="_parse"/>
+</form>
  {% endif %}
     {{ block.super }}
 {% endblock %}

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'twogis_parser',
     'vl_parser',
     'youtube_parser',
+    'vkvideo_parser',
 
 ]
 

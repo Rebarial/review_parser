@@ -2,7 +2,7 @@ from celery import shared_task
 from django.core.mail import send_mail
 from django.conf import settings
 from common_parser.tools.parse import parse_all_providers, create_yandex_reviews, create_2gis_reviews, create_google_reviews, create_vlru_reviews
-from common_parser.tools.parse_videos import parse_youtube_videos
+from common_parser.tools.parse_videos import parse_youtube_videos, parse_vk_videos
 from common_parser.models import Branch, Playlist
 from django.shortcuts import get_object_or_404
 from loguru import logger
@@ -75,4 +75,12 @@ def parse_youtube_videos_async(playlist_id):
     playlist = get_object_or_404(Playlist, id=playlist_id)
     return {'playlist_id': playlist_id,
             'results': parse_youtube_videos(playlist.url)
+            }
+
+
+@shared_task(name='parse_vk_videos_async')
+def parse_vk_videos_async(playlist_id):
+    playlist = get_object_or_404(Playlist, id=playlist_id)
+    return {'playlist_id': playlist_id,
+            'results': parse_vk_videos(playlist.url)
             }

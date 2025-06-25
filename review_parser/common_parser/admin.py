@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect
-from common_parser.tasks import parse_all_providers_async, parse_2gis_async, parse_google_async, parse_vlru_async, parse_yandex_async, parse_youtube_videos_async
+from common_parser.tasks import parse_all_providers_async, parse_2gis_async, parse_google_async, parse_vlru_async, parse_yandex_async, parse_youtube_videos_async, parse_vk_videos_async
 from yandex_parser.tools.parser import create_yandex_reviews
 from google_parser.tools.parser import create_google_reviews
 from django.shortcuts import get_object_or_404
@@ -124,6 +124,12 @@ class PlaylistAdmin(NestedModelAdmin):
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_playlist_changelist'))
     
+    def parsing_vk(self, request, object_id=None):  
+
+        parse_vk_videos_async.delay(object_id)#.delay(object_id)#.delay(object_id)
+
+        return HttpResponseRedirect(reverse_lazy('admin:common_parser_playlist_changelist'))
+    
 
     def get_urls(self):
         urls = super().get_urls()
@@ -131,6 +137,7 @@ class PlaylistAdmin(NestedModelAdmin):
         my_urls = [
             path('<path:object_id>/change/parse/', self.admin_site.admin_view(self.parsing)),
             path('<path:object_id>/change/parse-youtube/', self.admin_site.admin_view(self.parsing_youtube)),
+            path('<path:object_id>/change/parse-vk/', self.admin_site.admin_view(self.parsing_vk)),
         ]
         return my_urls + urls
 
