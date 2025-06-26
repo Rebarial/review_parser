@@ -2,7 +2,7 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 from dotenv import load_dotenv
-
+from datetime import timedelta
 
 
 load_dotenv()
@@ -21,6 +21,12 @@ app.conf.beat_schedule = {
     'weekly-sunday-6am-task': {
         'task': 'common_parser.tasks.weekly_parsing',
         'schedule': crontab(hour=6, minute=0, day_of_week='sun'),
+    },
+    # Disable cleanup task by scheduling to run every ~1000 years
+    'backend_cleanup': {
+        'task': 'celery.backend_cleanup',
+        'schedule': timedelta(days=365*1000),
+        'relative': True,
     },
 }
 

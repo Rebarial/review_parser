@@ -126,7 +126,7 @@ class PlaylistAdmin(NestedModelAdmin):
     
     def parsing_vk(self, request, object_id=None):  
 
-        parse_vk_videos_async.delay(object_id)#.delay(object_id)#.delay(object_id)
+        parse_vk_videos_async(object_id)#.delay(object_id)#.delay(object_id)
 
         return HttpResponseRedirect(reverse_lazy('admin:common_parser_playlist_changelist'))
     

@@ -72,9 +72,13 @@ def parse_vk_videos(url: str)-> None:
 
     author_id, playlist_id = get_ids(url)
 
-    videos = parse_video_data(author_id, playlist_id).get("response")
+    videos = parse_video_data(author_id, playlist_id) 
 
-    playlist = parse_playlist_data(author_id, playlist_id).get("response")
+    videos = videos.get("response")
+
+    playlist = parse_playlist_data(author_id, playlist_id)
+
+    playlist = playlist.get("response")
 
     playlist_data = {
         'title': playlist.get('title'),
