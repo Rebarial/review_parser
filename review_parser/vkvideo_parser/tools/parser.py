@@ -9,7 +9,7 @@ import json
 
 def get_token(url: str) -> dict:
     """Получаем токен анонимного пользователя из запросов на странице"""
-    driver = selenium_get_driver()
+    driver = selenium_get_driver(set_capability=True)
 
     driver.execute_cdp_cmd("Network.enable", {})
 
