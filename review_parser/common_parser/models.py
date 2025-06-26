@@ -133,7 +133,7 @@ class Video(models.Model):
     title = models.CharField(max_length=255, blank=True, null=True)
     author = models.CharField(max_length=255, blank=True, null=True)
     date = models.DateTimeField(blank=True, null=True)
-    preview = models.CharField(max_length=1000, blank=True, null=True)
+    preview = models.URLField(max_length=1000, blank=True, null=True)
     duration = models.IntegerField(blank=True, null=True, default=None)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, related_name='videos')
     

@@ -89,11 +89,11 @@ def get_video_data(dict: dict, playlist: int, author: str)-> dict:
     """собираем видео для нашей модели"""
     scale = 0
     prew = ""
-    for prew in dict.get('image'):
-        width = int(prew.get('width'))
+    for prewi in dict.get('image'):
+        width = int(prewi.get('width'))
         if scale < width:
             scale = width
-            prew = prew.get('url')
+            prew = prewi.get('url')
     
     print(prew)
 
