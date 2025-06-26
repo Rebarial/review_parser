@@ -11,7 +11,8 @@ load_dotenv()
 API_KEY = os.getenv("YOUTUBE_API_KEY")
 youtube = build("youtube", "v3", developerKey=API_KEY)
 
-def get_playlist_videos(playlist_id):
+def get_playlist_videos(playlist_id: int) -> dict:
+    """получаем видио из плейлиста"""
     videos = []
     next_page_token = None
 
@@ -60,7 +61,7 @@ def get_playlist_videos(playlist_id):
 
     return videos
 
-def get_playlist_data(playlist_url):
+def get_playlist_data(playlist_url: str) -> dict:
 
     playlist_id = playlist_url.split("list=")[1].split("&")[0]
 
@@ -75,11 +76,10 @@ def get_playlist_data(playlist_url):
         "parse_date": datetime.now()
     }
 
-    print(playlist_data)
     return playlist_data
 
 
-def parse_youtube_videos(url: str)-> None:
+def parse_youtube_videos(url: str)-> tuple[int, int]:
 
     data = get_playlist_data(url)
 
