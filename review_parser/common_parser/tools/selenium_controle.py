@@ -13,6 +13,7 @@ def selenium_get_driver():
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--window-size=40,1080')
+    chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
     return Chrome(
       service=Service(ChromeDriverManager().install()),

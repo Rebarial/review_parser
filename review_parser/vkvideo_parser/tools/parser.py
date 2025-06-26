@@ -4,6 +4,7 @@ from datetime import datetime
 import requests
 import re
 from common_parser.tools.create_objects import create_video, get_or_create_playlist
+from common_parser.tools.selenium_controle import selenium_get_driver
 
 load_dotenv()
 
@@ -23,10 +24,7 @@ def get_token():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options
-    )
+    driver = selenium_get_driver()
 
     # Включаем логирование сети
     driver.execute_cdp_cmd("Network.enable", {})
