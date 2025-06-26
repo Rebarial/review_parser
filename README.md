@@ -79,6 +79,27 @@ http://185.104.113.137:8000/swagger/
     
     - avatar__isnull=false → avatar != null
 
+## Парсинг видео
+
+создаем новый плейлист и добавляем ссылку на плейлист
+
+![image](https://github.com/user-attachments/assets/fccf9c63-8a4f-4783-af7d-f50d406692e8)
+
+для вк необходимо выбирать ссылки типа: https://vkvideo.ru/playlist/-157530610_10
+
+(сейчас в вк парсится из плейлиста не более 10 видео, можно поменять)
+
+для ютуба https://www.youtube.com/playlist?list=PLyIn--Pv43vK3HGN7uoH0N9A89zeYxdCn
+
+сохраняем, после видио из плейлистов спарсятся.
+
+## Получение видео 
+
+создаем Playlist ip mappings и получаем на ручке get_videos_by_ip (подробнее в swagger)
+
+![image](https://github.com/user-attachments/assets/1d1f9316-d82b-4f7b-98b9-a1201b28280b)
+
+
 ## Ручной парсинг
 
 Если при создании был неудачный парсинг или понадобилось запарсить вручную. Можно зайти в ветку и нажать на кнопки парсинга:
