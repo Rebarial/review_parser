@@ -288,6 +288,7 @@ def get_videos_by_ip(request):
     data = {
             'ip': ip,
             'playlists': playlist_serializer.data,
+            'provider_viedos_count' : Video.objects.filter(playlist__in=playlists).values('playlist__provider').annotate(review_count=Count('id')),
             'videos': videos_data,
             }
     
