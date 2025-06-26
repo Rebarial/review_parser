@@ -161,7 +161,7 @@ def get_reviews(request):
                                 "provider",
                                 "review_count"
                             }
-                        ]
+                        ],
                         "reviews": [
                             {
                                 "id",
@@ -250,6 +250,12 @@ def get_reviews_by_ip(request):
                             "parse_date",
                             "provider",
                         }],
+                        'provider_reviews_count': [
+                            {
+                                "provider",
+                                "review_count"
+                            }
+                        ],
                         "videos": [
                             {
                                 "id",
