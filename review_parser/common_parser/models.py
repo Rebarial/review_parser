@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.timezone import now
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.db.transaction import on_commit
 
 class Organization(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
@@ -51,7 +52,7 @@ class Branch(models.Model):
 def send_notification(sender, instance, created, **kwargs):
     if created:
         from common_parser.tasks import parse_all_providers_async_on_create
-        parse_all_providers_async_on_create.delay(instance.organization.id, instance.address)
+        on_commit(lambda: parse_all_providers_async_on_create.delay(instance.organization.id, instance.address))
 
 
 class Review(models.Model):
@@ -124,9 +125,9 @@ def send_notification(sender, instance, created, **kwargs):
     if created:
         from common_parser.tasks import parse_youtube_videos_async, parse_vk_videos_async
         if "youtube" in instance.url:
-            parse_youtube_videos_async.delay(instance.id)
-        if "vk" in instance.url:
-            parse_vk_videos_async.delay(instance.id)
+            on_commit(lambda: parse_youtube_videos_async.delay(instance.id))
+        elif "vk" in instance.url:
+            on_commit(lambda: parse_vk_videos_async.delay(instance.id))
 
 class Video(models.Model):
     url = models.URLField()
