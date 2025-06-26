@@ -1,45 +1,25 @@
-from dotenv import load_dotenv
-import os
 from datetime import datetime
 import requests
 import re
 from common_parser.tools.create_objects import create_video, get_or_create_playlist
 from common_parser.tools.selenium_controle import selenium_get_driver
 
-load_dotenv()
-
-API_KEY = "vk1.a.oCjIYSm917BvsFoTOsjYRorWyFNkmWMy2X-3HPbr8W3NmTtRK_mvw9tKZYYhVwLPtWqS9ZdVw44NylSj-9dgth8oLsNzGPcOmqxcK4Mg9P6as0BHvFS4u5VrFGSIWL3zTDLM1pcF3lP2PKrsGo7CehCm7r64pXZjrq5a-WgZB7C9s87EPtWRfgAZRZLXFzEj"#os.getenv("VKVIDEO_API_KEY")
-
-
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 import time
 import json
 
-def get_token():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
-
+def get_token(url: str) -> dict:
+    """Получаем токен анонимного пользователя из запросов на странице"""
     driver = selenium_get_driver()
 
-    # Включаем логирование сети
     driver.execute_cdp_cmd("Network.enable", {})
 
-    # Создаем список для хранения информации о запросах
     requests_info = {}
 
-    # Открываем страницу
-    driver.get("https://vkvideo.ru/@winline/playlists")
-    time.sleep(5)  # Ждем загрузки
+    driver.get(url)
+    time.sleep(5)
 
-    # Получаем логи производительности
     logs = driver.get_log('performance')
 
-    # Ищем нужный запрос
     target_request_id = None
     target_url = None
 
@@ -69,8 +49,8 @@ def get_token():
             if 'body' in response:
                 try:
                     json_data = json.loads(response['body'])
-                    #print("Распарсенный JSON:")
-                    result = json_data#json.dumps(json_data, indent=2, ensure_ascii=False)
+
+                    result = json_data
                 except:
                     print("Ответ не в JSON формате")
         except Exception as e:
@@ -83,7 +63,7 @@ def get_token():
     return result
 
 
-def parse_video_data(owner_id, album_id, token):
+def parse_video_data(owner_id: int, album_id: int, token: str) -> dict:
     params = {
         "owner_id": owner_id,
         "album_id": album_id,
@@ -95,7 +75,7 @@ def parse_video_data(owner_id, album_id, token):
     response = requests.get("https://api.vk.com/method/video.get", params=params)
     return response.json()
 
-def parse_playlist_data(owner_id, album_id, token):
+def parse_playlist_data(owner_id: int, album_id: int, token:str) -> dict:
     params = {
         "owner_id": owner_id,
         "album_id": album_id,
@@ -105,8 +85,8 @@ def parse_playlist_data(owner_id, album_id, token):
     response = requests.get("https://api.vk.com/method/video.getAlbumById", params=params)
     return response.json()
 
-def get_video_data(dict, playlist, author)-> dict:
-
+def get_video_data(dict: dict, playlist: int, author: str)-> dict:
+    """собираем видео для нашей модели"""
     scale = 0
     prew = ""
     for prew in dict.get('image'):
@@ -129,7 +109,7 @@ def get_video_data(dict, playlist, author)-> dict:
     return result
 
 def get_ids(url: str) -> tuple[int, int]:
-
+    """из url получаем id автора и id плейлиста"""
     pattern = r'(-?\d+)_(\d+)$'
     match = re.search(pattern, url)
 
@@ -141,37 +121,40 @@ def get_ids(url: str) -> tuple[int, int]:
     
     
 
-def parse_vk_videos(url: str)-> None:
+def parse_vk_videos(url: str)-> tuple[int, int]:
 
-    tok = get_token().get("data").get("access_token")
-    #print(tok.get("data").get("access_token"))
+    token = get_token(url).get("data", {}).get("access_token", "")
 
-    author_id, playlist_id = get_ids(url)
+    if token:
 
-    videos = parse_video_data(author_id, playlist_id, tok) 
+        author_id, playlist_id = get_ids(url)
 
-    videos = videos.get("response")
+        videos = parse_video_data(author_id, playlist_id, token) 
 
-    playlist = parse_playlist_data(author_id, playlist_id, tok)
+        videos = videos.get("response")
 
-    playlist = playlist.get("response")
+        playlist = parse_playlist_data(author_id, playlist_id, token)
 
-    playlist_data = {
-        'title': playlist.get('title'),
-        'count': playlist.get("count"),
-        'url': url,
-        'parse_date': datetime.now(),
-        'provider': 'vk'
+        playlist = playlist.get("response")
 
-    }
+        playlist_data = {
+            'title': playlist.get('title'),
+            'count': playlist.get("count"),
+            'url': url,
+            'parse_date': datetime.now(),
+            'provider': 'vk'
 
-    playlist = get_or_create_playlist(playlist_data)
+        }
 
-    cnt = 0
+        playlist = get_or_create_playlist(playlist_data)
 
-    author = videos.get('groups')[0].get("name")
-    for video in videos.get('items'):
-        if create_video(get_video_data(video, playlist.id,author)):
-            cnt += 1
+        cnt = 0
+
+        author = videos.get('groups')[0].get("name")
+        for video in videos.get('items'):
+            if create_video(get_video_data(video, playlist.id,author)):
+                cnt += 1
+    else:
+        raise ValueError("Ошибка: не удалось получить токен")
 
     return (len(videos), cnt)
