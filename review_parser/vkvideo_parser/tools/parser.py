@@ -94,7 +94,8 @@ def get_video_data(dict: dict, playlist: int, author: str)-> dict:
         if scale < width:
             scale = width
             prew = prew.get('url')
-                       
+    
+    print(prew)
 
     result = {
         'url': dict.get('share_url'),
