@@ -28,7 +28,7 @@ services:
 
   celery:
     build: .
-    command: celery -A review_parser worker --loglevel=info --pool=solo --concurrency=1 --broker_connection_retry_on_startup=true
+    command: celery -A review_parser worker --loglevel=info --pool=solo --concurrency=1
     volumes:
       - .:/code
     depends_on: 
