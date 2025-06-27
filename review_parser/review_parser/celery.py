@@ -16,6 +16,14 @@ app.conf.broker_connection_retry_on_startup = True
 app.conf.broker_connection_retry = True
 app.conf.broker_connection_max_retries = 1
 
+
+app.conf.broker_transport_options = {
+    'visibility_timeout': 3600, 
+    'socket_connect_timeout': 10, 
+    'socket_keepalive': True,     
+    'retry_on_timeout': True,    
+    'max_retries': 3,             
+}
 # Настройка периодических задач
 app.conf.beat_schedule = {
     'weekly-sunday-6am-task': {
