@@ -345,3 +345,11 @@ def parse_filter_string(filter_str):
         conditions &= q_object
     
     return conditions
+
+
+
+from django.http import HttpResponse
+
+def webhook(request):
+    print("Request body:", request.body.decode('utf-8'))  # вывод содержимого тела запроса
+    return HttpResponse(status=200)
