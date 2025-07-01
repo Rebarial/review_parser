@@ -350,6 +350,9 @@ def parse_filter_string(filter_str):
 
 from django.http import HttpResponse
 
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
 def webhook(request):
     print("Request body:", request.body.decode('utf-8'))  # вывод содержимого тела запроса
     return HttpResponse(status=200)
